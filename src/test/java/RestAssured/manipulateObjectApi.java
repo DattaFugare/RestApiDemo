@@ -1,4 +1,6 @@
 package RestAssured;
+import Payload.payLoad;
+import Files.jPath;
 import io.restassured.RestAssured;
 import static  io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.equalTo;
@@ -8,26 +10,18 @@ import io.restassured.response.Response;
 import org.testng.annotations.*;
 
 
+
 public class manipulateObjectApi {
-    String ObjectID;
+    String Obj_id;
     @Test
     public void createObject()
     {
 
         RestAssured.baseURI="https://api.restful-api.dev";
-       Response rep= given().header("Content-Type","application/json").body("{\n" +
-                "   \"name\": \"myApple MacBook Pro edition\",\n" +
-                "   \"data\": {\n" +
-                "      \"year\": 2004,\n" +
-                "      \"price\": 2000.99,\n" +
-                "      \"CPU model\": \"Intel Core i20\",\n" +
-                "      \"Hard disk size\": \"1 TB\"\n" +
-                "   }\n" +
-                "}").when().post("/objects").then().assertThat().
+       Response rep= given().header("Content-Type","application/json")
+               .body(payLoad.createObjectPlayload()).when().post("/objects").then().assertThat().
                contentType("application/json").log().all().extract().response();
-        String respon=rep.asString();
-        JsonPath jp=new JsonPath(respon);
-         ObjectID=jp.get("id");
+           Obj_id= jPath.RawToJson(rep);
 
 
 
@@ -38,17 +32,11 @@ public class manipulateObjectApi {
     {
         RestAssured.baseURI="https://api.restful-api.dev";
         given().header("Content-Type","application/json")
-                .body("{\n" +
-                        "   \"name\": \"Apple MacBook Pro 16\",\n" +
-                        "   \"data\": {\n" +
-                        "      \"year\": 2019,\n" +
-                        "      \"price\": 2049.99,\n" +
-                        "      \"CPU model\": \"Intel Core i9\",\n" +
-                        "      \"Hard disk size\": \"1 TB\",\n" +
-                        "      \"color\": \"black\"\n" +
-                        "   }\n" +
-                        "}").when().put("/objects/"+ObjectID)
-                .then().statusCode(200).and().body("data.color",equalTo("black"));
+                .body(payLoad.updateOjectPayload()).when().put("/objects/"+Obj_id)
+                .then().statusCode(200).and()
+                .body("data.color",equalTo("black"))
+                .and().log().all().extract().response();
+
     }
 
     @Test(dependsOnMethods = {"updateObjectById"})
@@ -56,30 +44,26 @@ public class manipulateObjectApi {
     {
         RestAssured.baseURI="https://api.restful-api.dev";
         given().header("Content-Type","application/json")
-                .body("{\n" +
-                        "   \"name\": \"Apple MacBook Pro 16\",\n" +
-                        "   \"data\": {\n" +
-                        "      \"year\": 2019,\n" +
-                        "      \"price\": 2049.99,\n" +
-                        "      \"CPU model\": \"Intel Core i9\",\n" +
-                        "      \"Hard disk size\": \"1 TB\",\n" +
-                        "      \"color\": \"white\"\n" +
-                        "   }\n" +
-                        "}").when().patch("/objects/"+ObjectID)
-                .then().statusCode(200).and().body("data.color",equalTo("white"));
+                .body(payLoad.PartialupdateOjectPayload()).when().patch("/objects/"+Obj_id)
+                .then().statusCode(200).and()
+                .body("data.color",equalTo("black"))
+                .and().log().all().extract().response();
     }
     @Test(dependsOnMethods = {"partialupdateObjectById"})
     public void getObjectById()
     {
         RestAssured.baseURI="https://api.restful-api.dev";
-        given().when().get("/objects/"+ObjectID).then().assertThat().statusCode(200).and()
-                .body("name",equalTo("Apple MacBook Pro 16"));
+        given().when().get("/objects/"+Obj_id).then().assertThat().statusCode(200).and()
+                .body("name",equalTo("Apple MacBook Pro 20 edition (Updated Name)"))
+                .and().log().all().extract().response();
     }
     @Test(dependsOnMethods = {"getObjectById"})
     public void deleteObjectById()
     {
         RestAssured.baseURI="https://api.restful-api.dev";
-        given().when().delete("/objects/"+ObjectID).then().assertThat().statusCode(200).and().log().all().extract().response();
+        given().when().delete("/objects/"+Obj_id).then().assertThat().statusCode(200).and().log().all().extract().response();
 
     }
 }
+
+
